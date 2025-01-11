@@ -1,0 +1,57 @@
+from bs4 import BeautifulSoup as bs
+import pandas as pd
+import requests
+
+# Initialize lists for storing review data
+cust_name = []
+rev_date = []
+ratings = []
+rev_title = []
+rev_content = []
+
+# Loop through pages
+for page in range(1, 100):
+    # Construct the URL
+    url = f"https://www.amazon.in/Zerfa-Extended-Rubber-Keyboard-Computer/dp/B09YQ54TPL/?_encoding=UTF8&pd_rd_w=T7zY2&content-id=amzn1.sym.a8a8b1e4-16de-414a-bfd8-08a869cedc75%3Aamzn1.symc.9b8fba90-e74e-4690-b98f-edc36fe735a6&pf_rd_p=a8a8b1e4-16de-414a-bfd8-08a869cedc75&pf_rd_r=33J05BXQS94691PJ329T&pd_rd_wg=mCxTX&pd_rd_r=4f856134-5106-42d6-8c60-a0052359bd40&ref_=pd_hp_d_btf_ci_mcx_mr_ca_id_hp_d"
+
+    # Send HTTP request
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+    
+    # Check if the request is successful
+    if response.status_code == 200:
+        # Parse the page content
+        soup = bs(response.content, 'html.parser')
+        
+        # Extract relevant data
+        names = soup.select('span.a-profile-name')[2:]
+        titles = soup.select('a.review-title span')
+        dates = soup.select('span.review-date')[2:]
+        stars = soup.select('i.review-rating span.a-icon-alt')[2:]
+        reviews = soup.select('span[data-hook="review-body"]')
+        
+        # Loop through the maximum available reviews on the page
+        max_reviews = max(len(names), len(dates), len(stars), len(titles), len(reviews))
+        for i in range(max_reviews):
+            # Append data or placeholders if missing
+            cust_name.append(names[i].get_text() if i < len(names) else None)
+            rev_date.append(dates[i].get_text().replace("Reviewed in India on ", "") if i < len(dates) else None)
+            ratings.append(stars[i].get_text() if i < len(stars) else None)
+            rev_title.append(titles[i].get_text() if i < len(titles) else None)
+            rev_content.append(reviews[i].get_text().strip("\n ") if i < len(reviews) else None)
+    else:
+        print(f"Failed to fetch page {page}, status code: {response.status_code}")
+
+# Create a DataFrame from the collected data
+df = pd.DataFrame({
+    'Customer Name': cust_name,
+    'Date': rev_date,
+    'Ratings': ratings,
+    'Review Title': rev_title,
+    'Reviews': rev_content
+})
+
+# Save the DataFrame to a CSV file
+output_file = "amazon_reviews.csv"  # Specify the desired file name
+df.to_csv(output_file, index=False, encoding="utf-8")
+
+print(f"DataFrame successfully saved to {output_file}")
