@@ -1,6 +1,9 @@
 # Project_WoC_7.0_Fake_Review_Detection
 Amazon Review Detection : Genuine or Fake  (Web Scrapping and ML ) 
 A.CHECKPOINT_1 :
+ file 1 : amazon_reviews.csv --> direclty scrapping data from site (might not contain all columns )
+ file 2 : cleaned_amazon_reviews.csv  --> contains all 5 coloumn . removing unnecessary data 
+                                          file 2 is then passed for preprocessing .
   Extracting data from amazon product and converting to .csv file. 
   Cleaning the .csv file for training ML MODEL more accurately----> 
        Data Cleaning:
